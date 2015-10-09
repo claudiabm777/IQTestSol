@@ -1,0 +1,1 @@
+java -Xmx6512M -jar iq.jar
