@@ -1,7 +1,13 @@
 
 import java.awt.Dimension;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -421,8 +427,89 @@ public class Principal {
 		test.calcularNodoFinal();
 		for(int i=0;i<test.nodosT.size();i++){
 			test.nodosT.get(i).id=i;
+			if(!test.nodosT.get(i).nombre.equals("Inicial")&&!test.nodosT.get(i).nombre.equals("Final")){
+				test.nodosT.get(i).nombre=test.nodosT.get(i).id+"";
+			}
 		}
 		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!"+test.nodosT.size());
+		
+		
+		
+		JFrame parentFrame = new JFrame();
+		 
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setDialogTitle("Specify a file to save");   
+		 
+		int userSelection = fileChooser.showSaveDialog(parentFrame);
+		 
+		if (userSelection == JFileChooser.APPROVE_OPTION) {
+		    File fileToSave = fileChooser.getSelectedFile();
+		    
+		    try {
+
+				String content = "This is the content to write into file";
+
+				File file = fileToSave;
+
+				// if file doesnt exists, then create it
+				if (!file.exists()) {
+					file.createNewFile();
+				}
+
+				FileWriter fw = new FileWriter(file.getAbsoluteFile());
+				BufferedWriter bw = new BufferedWriter(fw);
+				bw.write("N:[");
+				bw.newLine();
+				for(Tablero n:test.nodosT){
+					bw.write("\""+n.nombre+"\"");
+					bw.newLine();
+				}
+				bw.write("]");
+				bw.newLine();
+				
+				bw.write("c:[");
+				bw.newLine();
+				for(Arco a:test.arcos){
+					bw.write("(\""+a.papa.nombre+"\",\""+a.hijo.nombre+"\")"+a.costo);
+					bw.newLine();
+				}
+				bw.write("]");
+				bw.newLine();
+				
+				bw.write("b:[");
+				bw.newLine();
+				for(int i=0;i<test.nodosT.size();i++){
+					Tablero n=test.nodosT.get(i);
+					if(i==(test.nodosT.size()-2)){
+						
+						bw.write("(\""+n.nombre+"\""+")"+1);
+						bw.newLine();
+					}
+					else if(i==(test.nodosT.size()-1)){
+						bw.write("(\""+n.nombre+"\""+")"+-1);
+						bw.newLine();
+					}
+					else{
+						bw.write("(\""+n.nombre+"\""+")"+0);
+						bw.newLine();
+					}
+				}
+				bw.write("]");
+				bw.close();
+
+				JOptionPane.showMessageDialog (null, "El archivo se guardo con los parametros satisfactoriamente.", "Archivo Guardado", JOptionPane.INFORMATION_MESSAGE);
+
+			} catch (IOException e) {
+				JOptionPane.showMessageDialog (null, "Uppss! no se pudo guardar bien tu archivo, vuelve a intentarlo.", "Error", JOptionPane.ERROR_MESSAGE);
+
+			}
+		    
+		    
+		}
+		
+		
+		
+		double t1=System.currentTimeMillis();
 		DIKBD_Graph gr=new DIKBD_Graph(test.nodosT.size());
 		for(int i=0;i<test.nodosT.size();i++){
 			gr.addVertex(new DIKBD_Vertex(i));
@@ -435,10 +522,12 @@ public class Principal {
 		}
 		DIKBD al=new DIKBD(gr, test.nodosT.size()-2);
 		al.runAlgDist();
+		double t2=System.currentTimeMillis();
+		double t=(t2-t1)/1000;
 		String aa =gr.getPath(test.nodosT.size()-1);
 		System.out.println(aa);
 		String[]split=aa.split(" , ");
-		String respMost="El numero minimo de movimientos es: "+(split.length-1-1)+".\nLas jugadas son:\n";
+		String respMost="El tiempo computacional (seg) fue: "+t+"\nEl numero minimo de movimientos es: "+(split.length-1-1)+".\nLas jugadas son:\n";
 		for (int i = 0; i < split.length-1; i++) {
 			//System.out.println(split[i]);
 			System.out.println(test.nodosT.get(Integer.parseInt(split[i])).toString());
